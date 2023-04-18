@@ -1,0 +1,6 @@
+venv
+src/geckodriver.log
+geckodriver.log
+config/config.ini
+src/__pycache__/
+.idea/
