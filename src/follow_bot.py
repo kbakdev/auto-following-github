@@ -45,19 +45,40 @@ num_pages = args.number
 max_followers = args.followers
 followers_count = 0
 
+# Set up rate limiting
+max_requests = 2500
+window_time = 60 * 60 * 2
+start_time = time.time()
+requests_count = 0
+
 for t in range(1, num_pages + 1):
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+
+    # Check if we reached the request limit
+    if requests_count >= max_requests and elapsed_time < window_time:
+        sleep_time = window_time - elapsed_time
+        print(f"Rate limit reached. Sleeping for {sleep_time} seconds.")
+        time.sleep(sleep_time)
+        start_time = time.time()
+        requests_count = 0
+
     url = f"https://github.com/{target_user}/?page={t}&tab=followers"
     driver.get(url)
-    time.sleep(3000)
+    time.sleep(120)
+    requests_count += 1
 
     follow_button = driver.find_elements(By.XPATH, "//input[@class='btn btn-sm ' and starts-with(@aria-label, 'Follow')]")
 
     for i in follow_button:
         i.submit()
         followers_count += 1
+        requests_count += 1
+
         if followers_count >= max_followers:
             break
-        time.sleep(120)
+
+        time.sleep(3)
 
     if followers_count >= max_followers:
         break
